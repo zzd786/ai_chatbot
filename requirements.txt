@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+streamlit
+openai
+python-dotenv
+asyncpg
+sqlparse
