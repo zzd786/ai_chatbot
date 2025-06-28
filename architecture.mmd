@@ -1,0 +1,107 @@
+graph TB
+    %% User Interface Layer
+    subgraph "Frontend (Streamlit)"
+        UI[User Interface]
+        LangSelect[Language Selector]
+        QueryInput[Query Input Box]
+        SampleQueries[Sample Query Buttons]
+        SchemaExplorer[Schema Explorer]
+        ResultsTable[Results Table]
+        CSVExport[CSV Export]
+        SQLToggle[SQL Display Toggle]
+    end
+
+    %% Backend API Layer
+    subgraph "Backend (FastAPI)"
+        subgraph "API Endpoints"
+            HealthAPI["/health"]
+            QueryAPI["/query"]
+            SchemaAPI["/schema"]
+        end
+        
+        subgraph "Core Modules"
+            Models[Pydantic Models]
+            MainApp[main.py]
+            LLMModule[llm.py]
+            DBModule[db.py]
+            PromptsModule[prompts.py]
+        end
+    end
+
+    %% Configuration Layer
+    subgraph "Shared Config"
+        Config[config.py]
+        EnvVars[Environment Variables]
+        Logging[Logging Setup]
+    end
+
+    %% External Services
+    subgraph "External Services"
+        OpenAI[OpenAI GPT-4 API]
+        PostgreSQL[(PostgreSQL Database)]
+    end
+
+    %% Data Flow - User Query Processing
+    UI --> QueryInput
+    QueryInput --> QueryAPI
+    QueryAPI --> Models
+    Models --> LLMModule
+    LLMModule --> PromptsModule
+    LLMModule --> OpenAI
+    OpenAI --> LLMModule
+    LLMModule --> DBModule
+    DBModule --> PostgreSQL
+    PostgreSQL --> DBModule
+    DBModule --> QueryAPI
+    QueryAPI --> UI
+    UI --> ResultsTable
+    ResultsTable --> CSVExport
+
+    %% Data Flow - Schema Exploration
+    SchemaExplorer --> SchemaAPI
+    SchemaAPI --> DBModule
+    DBModule --> PostgreSQL
+    PostgreSQL --> SchemaAPI
+    SchemaAPI --> SchemaExplorer
+
+    %% Data Flow - Sample Queries
+    SampleQueries --> QueryInput
+
+    %% Configuration Flow
+    Config --> EnvVars
+    Config --> Logging
+    Config --> MainApp
+    Config --> LLMModule
+    Config --> DBModule
+
+    %% Health Monitoring
+    UI --> HealthAPI
+    HealthAPI --> UI
+
+    %% Language Selection Flow
+    LangSelect --> QueryAPI
+    LangSelect --> LLMModule
+
+    %% Security Layer
+    subgraph "Security Features"
+        SQLParse[SQL Injection Protection]
+        ReadOnly[Read-Only Operations]
+        Validation[Input Validation]
+    end
+
+    DBModule --> SQLParse
+    Models --> Validation
+    PostgreSQL --> ReadOnly
+
+    %% Improved Styling with Better Colors
+    classDef frontend fill:#b3e5fc,stroke:#0277bd,stroke-width:3px,color:#01579b
+    classDef backend fill:#e1bee7,stroke:#7b1fa2,stroke-width:3px,color:#4a148c
+    classDef external fill:#ffcc80,stroke:#f57c00,stroke-width:3px,color:#e65100
+    classDef config fill:#c8e6c9,stroke:#388e3c,stroke-width:3px,color:#1b5e20
+    classDef security fill:#ffcdd2,stroke:#d32f2f,stroke-width:3px,color:#b71c1c
+
+    class UI,LangSelect,QueryInput,SampleQueries,SchemaExplorer,ResultsTable,CSVExport,SQLToggle frontend
+    class HealthAPI,QueryAPI,SchemaAPI,Models,MainApp,LLMModule,DBModule,PromptsModule backend
+    class OpenAI,PostgreSQL external
+    class Config,EnvVars,Logging config
+    class SQLParse,ReadOnly,Validation security
